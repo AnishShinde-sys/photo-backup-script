@@ -45,10 +45,10 @@ dev = [
 photo-backup = "photo_backup:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/photo-backup-script"
-Repository = "https://github.com/yourusername/photo-backup-script.git"
-Issues = "https://github.com/yourusername/photo-backup-script/issues"
-Changelog = "https://github.com/yourusername/photo-backup-script/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/AnishShinde-sys/photo-backup-script"
+Repository = "https://github.com/AnishShinde-sys/photo-backup-script.git"
+Issues = "https://github.com/AnishShinde-sys/photo-backup-script/issues"
+Changelog = "https://github.com/AnishShinde-sys/photo-backup-script/blob/main/CHANGELOG.md"
 
 [tool.black]
 line-length = 100
