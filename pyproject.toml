@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo-backup-script"
+version = "0.2.0"
+description = "Automated photo backup and synchronization tool"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your-email@example.com"}
+]
+keywords = ["photo", "backup", "synchronization", "deduplication"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Archiving :: Backup",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "PyYAML>=6.0",
+    "Pillow>=9.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "flake8>=6.0.0",
+    "black>=23.0.0",
+    "pylint>=2.17.0",
+    "bandit>=1.7.0",
+    "safety>=2.0.0",
+]
+
+[project.scripts]
+photo-backup = "photo_backup:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/photo-backup-script"
+Repository = "https://github.com/yourusername/photo-backup-script.git"
+Issues = "https://github.com/yourusername/photo-backup-script/issues"
+Changelog = "https://github.com/yourusername/photo-backup-script/blob/main/CHANGELOG.md"
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pylint.messages_control]
+disable = [
+    "C0111",  # missing-docstring
+    "C0103",  # invalid-name
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=photo_backup --cov-report=term-missing"

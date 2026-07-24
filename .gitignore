@@ -72,3 +72,14 @@ config.json
 *.tmp
 temp/
 tmp/
+# CI/CD artifacts
+bandit-report.json
+safety-report.json
+*.pyc
+
+# Build artifacts
+*.whl
+*.tar.gz
+
+# Security reports
+security-reports/

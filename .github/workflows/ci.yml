@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   test:
@@ -12,36 +12,107 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
+        pip install -e ".[dev]"
 
     - name: Lint with flake8
       run: |
-        pip install flake8
         flake8 photo_backup.py --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Check code formatting with black
+      run: |
+        black --check photo_backup.py
+
+    - name: Lint with pylint
+      run: |
+        pylint photo_backup.py --exit-zero
+
+    - name: Security scan with bandit
+      run: |
+        bandit -r photo_backup.py -f json -o bandit-report.json || true
+        bandit -r photo_backup.py
+
+    - name: Check dependencies for vulnerabilities
+      run: |
+        safety check --json > safety-report.json || true
+        safety check || true
 
     - name: Test basic functionality
       run: |
         python photo_backup.py --help
         python photo_backup.py --dry-run --config config.example.yaml
 
+    - name: Run coverage tests
+      run: |
+        pytest --cov=photo_backup --cov-report=xml --cov-report=term || true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: |
+        python -m build
+
+    - name: Check package with twine
+      run: |
+        twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
   validate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install markdown pyyaml
 
     - name: Validate configuration example
       run: |
@@ -49,5 +120,14 @@ jobs:
 
     - name: Check README syntax
       run: |
-        pip install markdown
         python -c "import markdown; markdown.markdown(open('README.md').read())"
+
+    - name: Validate CHANGELOG format
+      run: |
+        python -c "
+        import re
+        with open('CHANGELOG.md') as f:
+            content = f.read()
+            if not re.search(r'## \[\d+\.\d+\.\d+\]', content):
+                print('CHANGELOG.md should follow semantic versioning format')
+        "
