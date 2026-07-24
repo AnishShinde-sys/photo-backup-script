@@ -53,7 +53,26 @@ jobs:
     - name: Test basic functionality
       run: |
         python photo_backup.py --help
-        python photo_backup.py --dry-run --config config.example.yaml
+        # Create temp directories for CI testing
+        mkdir -p /tmp/ci_test_source /tmp/ci_test_dest
+        # Create a CI-specific config with valid paths
+        cat > /tmp/ci_config.yaml << 'EOF'
+        sources:
+          - path: "/tmp/ci_test_source"
+            recursive: true
+            file_types: ["jpg", "jpeg", "png"]
+        destination:
+          path: "/tmp/ci_test_dest"
+          organization: "date"
+          date_format: "%Y/%m/%d"
+        options:
+          deduplicate: true
+          preserve_metadata: true
+          verify_checksums: true
+          max_file_size_mb: 100
+          batch_size: 100
+        EOF
+        python photo_backup.py --dry-run --config /tmp/ci_config.yaml
 
     - name: Run coverage tests
       run: |
