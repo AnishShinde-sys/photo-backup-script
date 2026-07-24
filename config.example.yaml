@@ -1,0 +1,18 @@
+# Photo Backup Script Configuration
+
+sources:
+  - path: "/Users/username/Pictures/Camera"
+    recursive: true
+    file_types: ["jpg", "jpeg", "png", "raw", "heic", "tiff", "bmp", "gif"]
+
+destination:
+  path: "/Volumes/BackupDrive/Photos"
+  organization: "date"  # options: date, flat, custom
+  date_format: "%Y/%m/%d"
+
+options:
+  deduplicate: true
+  preserve_metadata: true
+  verify_checksums: true
+  max_file_size_mb: 100
+  batch_size: 100  # Process files in batches for memory efficiency
