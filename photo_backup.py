@@ -102,7 +102,7 @@ class PhotoBackup:
             dest_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Check for duplicates
-            if self.is_duplicate(source_file, dest_path.parent.parent):
+            if self.is_duplicate(source_file, dest_path.parent):
                 self.backup_stats["skipped"] += 1
                 return False
 
