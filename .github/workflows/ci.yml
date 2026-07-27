@@ -50,34 +50,51 @@ jobs:
         safety check --json > safety-report.json || true
         safety check || true
 
-    - name: Test basic functionality
+    - name: Test basic functionality (Unix)
+      if: runner.os != 'Windows'
       run: |
         python photo_backup.py --help
-        # Create temp directories for CI testing (cross-platform)
-        $sourceDir = if ($IsWindows) { "$env:TEMP\ci_test_source" } else { "/tmp/ci_test_source" }
-        $destDir = if ($IsWindows) { "$env:TEMP\ci_test_dest" } else { "/tmp/ci_test_dest" }
-        New-Item -ItemType Directory -Force -Path $sourceDir, $destDir | Out-Null
-        # Create a CI-specific config with valid paths
-        $configContent = @"
-sources:
-  - path: "$sourceDir"
-    recursive: true
-    file_types: ["jpg", "jpeg", "png"]
-destination:
-  path: "$destDir"
-  organization: "date"
-  date_format: "%Y/%m/%d"
-options:
-  deduplicate: true
-  preserve_metadata: true
-  verify_checksums: true
-  max_file_size_mb: 100
-  batch_size: 100
-"@
-        $configPath = if ($IsWindows) { "$env:TEMP\ci_config.yaml" } else { "/tmp/ci_config.yaml" }
-        $configContent | Out-File -FilePath $configPath -Encoding utf8
-        python photo_backup.py --dry-run --config $configPath
-      shell: pwsh
+        mkdir -p /tmp/ci_test_source /tmp/ci_test_dest
+        cat > /tmp/ci_config.yaml << 'CONFIGEOF'
+        sources:
+          - path: "/tmp/ci_test_source"
+            recursive: true
+            file_types: ["jpg", "jpeg", "png"]
+        destination:
+          path: "/tmp/ci_test_dest"
+          organization: "date"
+          date_format: "%Y/%m/%d"
+        options:
+          deduplicate: true
+          preserve_metadata: true
+          verify_checksums: true
+          max_file_size_mb: 100
+          batch_size: 100
+        CONFIGEOF
+        python photo_backup.py --dry-run --config /tmp/ci_config.yaml
+
+    - name: Test basic functionality (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        python photo_backup.py --help
+        New-Item -ItemType Directory -Force -Path "$env:TEMP\ci_test_source", "$env:TEMP\ci_test_dest" | Out-Null
+        @"
+        sources:
+          - path: "$env:TEMP\ci_test_source"
+            recursive: true
+            file_types: ["jpg", "jpeg", "png"]
+        destination:
+          path: "$env:TEMP\ci_test_dest"
+          organization: "date"
+          date_format: "%Y/%m/%d"
+        options:
+          deduplicate: true
+          preserve_metadata: true
+          verify_checksums: true
+          max_file_size_mb: 100
+          batch_size: 100
+        "@ | Set-Content "$env:TEMP\ci_config.yaml"
+        python photo_backup.py --dry-run --config "$env:TEMP\ci_config.yaml"
 
     - name: Run coverage tests
       run: |

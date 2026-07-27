@@ -16,3 +16,4 @@ options:
   verify_checksums: true
   max_file_size_mb: 100
   batch_size: 100  # Process files in batches for memory efficiency
+  sync_deletions: false  # Set to true to remove files from destination when deleted from source (two-way sync)
